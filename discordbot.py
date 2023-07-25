@@ -34,6 +34,8 @@ class MyBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         await self.tree.sync()
+        if self.debug_mode:
+            await self.tree.sync(guild=discord.Object(id=int(os.environ["SHICHI_GUILD_ID"])))
 
 
 async def main():
