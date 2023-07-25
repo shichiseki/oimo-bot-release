@@ -2,6 +2,7 @@ FROM python:3.9.13
 
 # パッケージインストール
 # libpq-devはpostgresqlライブラリ用
+RUN apt update
 RUN apt install -y locales ffmpeg libpq-dev
 
 # ロケール設定
