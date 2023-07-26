@@ -45,7 +45,7 @@ class EventCog(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         first_channel = guild.text_channels[0]
-        await first_channel.send("こんにちは！こちら、おいもbotです。\nマニュアルおよびソースコードは[こちら](https://github.com/shichiseki/oimo-bot-release)\n\nこのbotはボイスチャンネルのログおよびチーム決めボタンを自動的に送信します。\n以下のボタンから送信先を設定してください。", view=SettingView(self.bot, guild), embed=SettingView.SETTINGVIEW_INIT_EMBED)
+        await first_channel.send("こんにちは！こちら、おいもbotです。\n[マニュアル](https://github.com/shichiseki/oimo-bot-release)を必ずお読みください。\n\nこのbotはボイスチャンネルのログおよびチーム決めボタンを自動的に送信します。\n以下のボタンから送信先を設定してください。", view=SettingView(self.bot, guild), embed=SettingView.SETTINGVIEW_INIT_EMBED)
 
     @tasks.loop(time=schedule_time)
     async def initialize_by_day(self):

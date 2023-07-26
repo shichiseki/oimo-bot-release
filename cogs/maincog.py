@@ -49,9 +49,7 @@ class TestCog(commands.Cog):
     @app_commands.command(name="test-command", description="テスト")
     @app_commands.guilds(discord.Object(id=int(os.environ["SHICHI_GUILD_ID"])))  # debug
     async def test(self, interaction: discord.Interaction):
-        await interaction.response.send_message(
-            "こんにちは！こちら、おいもbotです。\nマニュアルおよびソースコードは[こちら](https://github.com/shichiseki/oimo-bot-release)\n\nこのbotはボイスチャンネルのログおよびチーム決めボタンを自動的に送信します。\n以下のボタンから送信先を設定してください。"
-        )
+        await interaction.response.send_message("こんにちは！こちら、おいもbotです。\n[マニュアル](https://github.com/shichiseki/oimo-bot-release)を必ずお読みください。\n\nこのbotはボイスチャンネルのログおよびチーム決めボタンを自動的に送信します。\n以下のボタンから送信先を設定してください。")
 
     @app_commands.checks.cooldown(1, 60 * 5, key=lambda i: i.guild_id)
     @app_commands.command(name="decide-team", description="チーム決めviewを送信します。")
