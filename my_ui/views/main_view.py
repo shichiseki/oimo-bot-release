@@ -557,8 +557,8 @@ class SettingView(discord.ui.View):
                     """
                 cursor.execute(sql, {"guild_id": guild_id, "log_ch_id": log_ch_id, "main_ch_id": main_ch_id})
 
-            # コミットしてトランザクション実行
-            self.bot.db_connector.commit()
+                # コミットしてトランザクション実行
+                self.bot.db_connector.commit()
 
         logger.info(f"UPSERT {guild_id} {log_ch_id} {main_ch_id}")
 
@@ -616,18 +616,13 @@ class SettingView(discord.ui.View):
                 setting_embed.add_field(name="チーム決めボタン送信先", value=f"# {interaction.guild.get_channel(int(main_ch_id)).name}", inline=False)
                 await interaction.response.send_message("以下の内容で設定が完了しました。", embed=setting_embed)
 
-            try:
                 # 設定チャンネル取得
                 log_ch = self.bot.get_channel(int(log_ch_id))
                 main_ch = self.bot.get_channel(int(main_ch_id))
 
                 # 確認メッセージ送信
-                
                 await log_ch.send(f"ボットログは今後{log_ch.mention}に送信されます。")
                 await main_ch.send(f"チーム分けボタンは今後{main_ch.mention}に送信されます。")
-
-            except Exception as e:
-                logger.error(e)
 
         # チャンネル未選択時処理
         else:
