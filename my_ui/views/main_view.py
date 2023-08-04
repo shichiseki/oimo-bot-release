@@ -8,11 +8,13 @@ import logging.handlers
 import random
 from collections import deque
 import sys
+import os
 import traceback
 
 from my_ui import Dropdown, DeleteButton
 from discordbot import MyBot
 
+import asyncpg
 
 logger = logging.getLogger(__name__)
 
@@ -532,7 +534,7 @@ class SettingView(discord.ui.View):
     def __init__(self, bot: MyBot, guild: discord.Guild):
         super().__init__(timeout=None)
         self.bot = bot
-        self.cd_mapping = commands.CooldownMapping.from_cooldown(2, 60, commands.BucketType.guild)
+        self.cd_mapping = commands.CooldownMapping.from_cooldown(3, 60, commands.BucketType.guild)
 
         # テキストチャンネル選択肢リスト
         text_ch_options = [discord.SelectOption(label=txt_ch.name, value=txt_ch.id, emoji="#⃣") for txt_ch in guild.text_channels]
@@ -545,21 +547,20 @@ class SettingView(discord.ui.View):
         self.add_item(self.voice_chat_log_ch_dropdown)
         self.add_item(self.main_ch_dropdown)
 
-    def upsert_txt_ch_id(self, guild_id: str, log_ch_id: str, main_ch_id: str):
-        with self.bot.db_connector:
-            with self.bot.db_connector.cursor() as cursor:
-                # UPSERT(なければINSERTあればUPDATE)
+    async def upsert_txt_ch_id(self, guild_id: str, log_ch_id: str, main_ch_id: str):
+        
+        conn_pool = asyncpg.create_pool(os.environ["DATABASE_URL"])
+                        
+        async with conn_pool as pool:
+            async with pool.acquire() as con:
                 sql = """
                         INSERT INTO config_by_guild (guild_id, log_ch_id, main_ch_id)
-                        VALUES (%(guild_id)s, %(log_ch_id)s, %(main_ch_id)s)
+                        VALUES ($1, $2, $3)
                         ON CONFLICT (guild_id)
-                        DO UPDATE SET log_ch_id = %(log_ch_id)s , main_ch_id = %(main_ch_id)s
+                        DO UPDATE SET log_ch_id = $2 , main_ch_id = $3
                     """
-                cursor.execute(sql, {"guild_id": guild_id, "log_ch_id": log_ch_id, "main_ch_id": main_ch_id})
-
-                # コミットしてトランザクション実行
-                self.bot.db_connector.commit()
-
+                await con.execute(sql, guild_id, log_ch_id, main_ch_id)
+        
         logger.info(f"UPSERT {guild_id} {log_ch_id} {main_ch_id}")
 
     @discord.ui.button(label="リスト更新", style=discord.ButtonStyle.blurple, custom_id="SettingView:UpdateList", row=2)
@@ -599,7 +600,7 @@ class SettingView(discord.ui.View):
 
             try:
                 # DB処理
-                self.upsert_txt_ch_id(str(interaction.guild_id), log_ch_id, main_ch_id)
+                await self.upsert_txt_ch_id(str(interaction.guild_id), log_ch_id, main_ch_id)
 
                 # botのギルド別辞書に格納
                 self.bot.guild_config_dic[interaction.guild_id] = {"log_ch_id": int(log_ch_id), "main_ch_id": int(main_ch_id)}

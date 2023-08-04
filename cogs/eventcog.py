@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 import asyncio
 from gtts import gTTS
-from psycopg2.extras import DictCursor
+import asyncpg
 
 from discordbot import MyBot
 from cogs.maincog import MainView
@@ -45,7 +45,11 @@ class EventCog(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         first_channel = guild.text_channels[0]
-        await first_channel.send("こんにちは！こちら、おいもbotです。\n[マニュアル](https://github.com/shichiseki/oimo-bot-release)を必ずお読みください。\n\nこのbotはボイスチャンネルのログおよびチーム決めボタンを自動的に送信します。\n以下のボタンから送信先を設定してください。", view=SettingView(self.bot, guild), embed=SettingView.SETTINGVIEW_INIT_EMBED)
+        await first_channel.send(
+            "こんにちは！こちら、おいもbotです。\n[マニュアル](https://github.com/shichiseki/oimo-bot-release)を必ずお読みください。\n\nこのbotはボイスチャンネルのログおよびチーム決めボタンを自動的に送信します。\n以下のボタンから送信先を設定してください。",
+            view=SettingView(self.bot, guild),
+            embed=SettingView.SETTINGVIEW_INIT_EMBED,
+        )
 
     @tasks.loop(time=schedule_time)
     async def initialize_by_day(self):
@@ -170,15 +174,15 @@ class EventCog(commands.Cog):
                     # ボタンとログ送信先取得
                     try:
                         # DB処理
-                        with self.bot.db_connector:
-                            with self.bot.db_connector.cursor(cursor_factory=DictCursor) as cursor:
-                                sql = f"SELECT log_ch_id, main_ch_id FROM config_by_guild WHERE guild_id = '{member.guild.id}'"
-                                cursor.execute(sql)
-                                row = cursor.fetchone()
+                        conn_pool = asyncpg.create_pool(os.environ["DATABASE_URL"])
 
+                        async with conn_pool as pool:
+                            async with pool.acquire() as con:
+                                sql = f"SELECT log_ch_id, main_ch_id FROM config_by_guild WHERE guild_id = '{member.guild.id}'"
+                                row = await con.fetchrow(sql)
                                 # 存在すれば取得
                                 if row is not None:
-                                    self.bot.guild_config_dic[member.guild.id] = {key: int(value) for key, value in dict(row).items()}
+                                    self.bot.guild_config_dic[member.guild.id] = {key: int(value) for key, value in row.items()}
 
                     except Exception:
                         logger.error(traceback.format_exc())
