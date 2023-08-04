@@ -59,7 +59,7 @@ class EventCog(commands.Cog):
     async def text_to_speech(self, message: discord.Message):
         # messageが空でないとき
         if message.clean_content:
-            logger.info(message.clean_content)
+            # logger.info(message.clean_content)
             # メッセージ加工
             text = create_text(message, word_dic=self.word_dict)
 
