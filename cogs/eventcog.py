@@ -5,7 +5,7 @@ import asyncio
 from gtts import gTTS
 import asyncpg
 
-from discordbot import MyBot
+from oimo_bot_release import MyBot
 from cogs.maincog import MainView
 from my_ui import SettingView
 from modules import FFmpegPCMAudio, create_text
@@ -174,7 +174,7 @@ class EventCog(commands.Cog):
                     # ボタンとログ送信先取得
                     try:
                         # DB処理
-                        conn_pool = asyncpg.create_pool(os.environ["DATABASE_URL"])
+                        conn_pool = asyncpg.create_pool(database=os.environ["DATABASE_URL"])
 
                         async with conn_pool as pool:
                             async with pool.acquire() as con:

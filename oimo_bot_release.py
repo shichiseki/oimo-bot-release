@@ -3,7 +3,6 @@ import asyncio
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-import psycopg2
 
 if os.path.exists("./.env"):
     load_dotenv(verbose=True)
@@ -18,7 +17,6 @@ class MyBot(commands.Bot):
     # MyBotのコンストラクタ。
     def __init__(self, command_prefix, intents: discord.Intents, debug_mode=False):
         self.debug_mode = debug_mode
-        self.db_connector = psycopg2.connect(os.environ["DATABASE_URL"])
         self.guild_config_dic = {}
         self.main_view_message_id_dic = {}
 

@@ -1,4 +1,4 @@
-from discordbot import COGS, MyBot
+from oimo_bot_release import COGS, MyBot
 from my_ui import MainView
 import discord
 from discord.ext import commands
