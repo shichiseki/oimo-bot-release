@@ -12,7 +12,7 @@ import os
 import traceback
 
 from my_ui import Dropdown, DeleteButton
-from discordbot import MyBot
+from oimo_bot_release import MyBot
 
 import asyncpg
 
@@ -548,9 +548,9 @@ class SettingView(discord.ui.View):
         self.add_item(self.main_ch_dropdown)
 
     async def upsert_txt_ch_id(self, guild_id: str, log_ch_id: str, main_ch_id: str):
-        
-        conn_pool = asyncpg.create_pool(os.environ["DATABASE_URL"])
-                        
+
+        conn_pool = asyncpg.create_pool(database=os.environ["DATABASE_URL"])
+
         async with conn_pool as pool:
             async with pool.acquire() as con:
                 sql = """
@@ -560,7 +560,7 @@ class SettingView(discord.ui.View):
                         DO UPDATE SET log_ch_id = $2 , main_ch_id = $3
                     """
                 await con.execute(sql, guild_id, log_ch_id, main_ch_id)
-        
+
         logger.info(f"UPSERT {guild_id} {log_ch_id} {main_ch_id}")
 
     @discord.ui.button(label="リスト更新", style=discord.ButtonStyle.blurple, custom_id="SettingView:UpdateList", row=2)
